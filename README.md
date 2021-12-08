@@ -10,9 +10,9 @@ Instruction :
 C:\project\> docker-compose up -d
 
 - Then three components will be running
-  a. mongodb (localhost:27107)
-  b. backend-server (localhost:8080)
-  c. frontend-server (localhost:8081)
+  + mongodb (localhost:27107)
+  + backend-server (localhost:8080)
+  + frontend-server (localhost:8081)
 
 3. By using browser, go to http://localhost:8081
 - customerList and itemList are preloaded
