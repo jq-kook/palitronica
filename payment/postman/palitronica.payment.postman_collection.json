@@ -1,0 +1,241 @@
+{
+	"info": {
+		"_postman_id": "c182972f-d518-4c1b-b113-db3c0884fdcd",
+		"name": "palitronica.payment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Items",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var data = pm.response.json();\r",
+							"var expectedNum = 4;\r",
+							"pm.test(\"Test number of items\", function () {\r",
+							"    pm.expect(data.length).to.be.eql(expectedNum);\r",
+							"});\r",
+							"pm.test(\"Test item ids of items\", function () {\r",
+							"    for (i=0; i<expectedNum; i++) {\r",
+							"        pm.expect(data[i].itemId)\r",
+							"            .to.be.oneOf([\"ITM_001\", \"ITM_002\", \"ITM_003\", \"ITM_004\"]);\r",
+							"    }\r",
+							"});\r",
+							"pm.test(\"Test names of items\", function () {\r",
+							"    for (i=0; i<expectedNum; i++) {\r",
+							"        pm.expect(data[i].name)\r",
+							"            .to.be.oneOf([\"Froot Loops\", \"Chex Choco\", \"Cheerios Honey Nut\", \"Quaker Harvest Crunch\"]);\r",
+							"    }\r",
+							"});\r",
+							"pm.test(\"Test prices of items\", function () {\r",
+							"    for (i=0; i<expectedNum; i++) {\r",
+							"        pm.expect(data[i].price)\r",
+							"            .to.be.oneOf([4.99, 4.49, 9.99, 7.46]);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/items",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Customers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var data = pm.response.json();\r",
+							"var expectedNum = 3;\r",
+							"pm.test(\"Test number of customers\", function () {\r",
+							"    pm.expect(data.length).to.be.eql(expectedNum);\r",
+							"});\r",
+							"pm.test(\"Test customer ids of customers\", function () {\r",
+							"    for (i=0; i<expectedNum; i++) {\r",
+							"        pm.expect(data[i].customerId)\r",
+							"            .to.be.oneOf([\"CUS_001\", \"CUS_002\", \"CUS_003\"]);\r",
+							"    }\r",
+							"});\r",
+							"pm.test(\"Test country codes of customers\", function () {\r",
+							"    for (i=0; i<expectedNum; i++) {\r",
+							"        pm.expect(data[i].countryCode)\r",
+							"            .to.be.oneOf([\"CA\", \"US\"]);\r",
+							"    }\r",
+							"});\r",
+							"pm.test(\"Test cities of customers\", function () {\r",
+							"    for (i=0; i<expectedNum; i++) {\r",
+							"        pm.expect(data[i].city)\r",
+							"            .to.be.oneOf([\"North York\", \"Yellowknife\", \"Los Angeles\"]);\r",
+							"    }\r",
+							"});\r",
+							"pm.test(\"Test zip codes of customers\", function () {\r",
+							"    for (i=0; i<expectedNum; i++) {\r",
+							"        pm.expect(data[i].zipCode)\r",
+							"            .to.be.oneOf([\"M2J0E3\", \"X1A3T2\", \"R2D2\"]);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/customers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Purchase Infos",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let customerIds = pm.collectionVariables.get(\"customerIds\");\r",
+							"\r",
+							"if(!customerIds || customerIds.length == 0) {\r",
+							"    customerIds = [\"CUS_001\", \"CUS_002\", \"CUS_003\", \"NotExistingCustomerId\"];\r",
+							"}\r",
+							"\r",
+							"let currentCustomerId = customerIds.shift();\r",
+							"console.log(currentCustomerId)\r",
+							"pm.collectionVariables.set(\"customerId\", currentCustomerId);\r",
+							"pm.collectionVariables.set(\"customerIds\", customerIds);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const customerIds = pm.collectionVariables.get(\"customerIds\");\r",
+							"\r",
+							"if (customerIds && customerIds.length > 0){\r",
+							"    postman.setNextRequest(\"Get Purchase Infos\");\r",
+							"} else {\r",
+							"    postman.setNextRequest(null);\r",
+							"}\r",
+							"\r",
+							"pm.test(\"Status code and response are expected\", function () {\r",
+							"    var customerId = pm.collectionVariables.set(\"customerId\");\r",
+							"    const responseJson = pm.response.json();\r",
+							"    switch (customerId) {\r",
+							"        case 'CUS_001':\r",
+							"            pm.expect(responseJson.customerName).to.eql(\"Jin Kyu\");\r",
+							"            pm.expect(responseJson.taxRate).to.eql(0.13);\r",
+							"            pm.expect(responseJson.totalTax).to.eql(8.29);\r",
+							"            pm.expect(responseJson.totalPrice).to.eql(72.07);\r",
+							"            pm.expect(responseJson.items[0].subtotal).to.eql(14.97);\r",
+							"            pm.expect(responseJson.items[1].subtotal).to.eql(8.98);\r",
+							"            pm.expect(responseJson.items[2].subtotal).to.eql(9.99);\r",
+							"            pm.expect(responseJson.items[3].subtotal).to.eql(29.84);\r",
+							"            pm.response.to.have.status(200);\r",
+							"            break;\r",
+							"        case 'CUS_002':\r",
+							"            pm.expect(responseJson.customerName).to.eql(\"Aurora\");\r",
+							"            pm.expect(responseJson.taxRate).to.eql(0.05);\r",
+							"            pm.expect(responseJson.totalTax).to.eql(3.19);\r",
+							"            pm.expect(responseJson.totalPrice).to.eql(66.97);\r",
+							"            pm.expect(responseJson.items[0].subtotal).to.eql(14.97);\r",
+							"            pm.expect(responseJson.items[1].subtotal).to.eql(8.98);\r",
+							"            pm.expect(responseJson.items[2].subtotal).to.eql(9.99);\r",
+							"            pm.expect(responseJson.items[3].subtotal).to.eql(29.84);\r",
+							"            pm.response.to.have.status(200);\r",
+							"            break;\r",
+							"        case 'CUS_003':\r",
+							"            pm.response.to.have.status(400);\r",
+							"            pm.expect(responseJson.message).to.eql(\"Invalid Customer Address\");\r",
+							"            break;\r",
+							"        case 'NotExistingCustomerId':\r",
+							"            pm.response.to.have.status(404);\r",
+							"            pm.expect(responseJson.message).to.eql(\"Resource Not Found\");\r",
+							"            break;\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"itemId\": \"ITM_001\",\r\n        \"name\": \"Froot Loops\",\r\n        \"price\": 4.99,\r\n        \"quantity\": 3\r\n    },\r\n    {\r\n        \"itemId\": \"ITM_002\",\r\n        \"name\": \"Chex Choco\",\r\n        \"price\": 4.49,\r\n        \"quantity\": 2\r\n    },\r\n    {\r\n        \"itemId\": \"ITM_003\",\r\n        \"name\": \"Cheerios Honey Nut\",\r\n        \"price\": 9.99,\r\n        \"quantity\": 1\r\n    },\r\n    {\r\n        \"itemId\": \"ITM_004\",\r\n        \"name\": \"Quaker Harvest Crunch\",\r\n        \"price\": 7.46,\r\n        \"quantity\": 4\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/purchaseinfos/{{customerId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"purchaseinfos",
+						"{{customerId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "customerId",
+			"value": ""
+		},
+		{
+			"key": "customerIds",
+			"value": ""
+		}
+	]
+}
